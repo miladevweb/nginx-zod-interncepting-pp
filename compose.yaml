@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  server:
+    depends_on:
+      - database
+    build:
+      context: .
+    environment:
+      NODE_ENV: production
+    env_file:
+      - .env
+    # Not exposing ports
+    # service name must be in proxy_pass service_name:3000 or container_name:3000
+    container_name: zod-next
+
+  nginx:
+    depends_on:
+      - server
+    build:
+      context: ./nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+
+  database:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=username
+      - POSTGRES_DB=mydb
+    restart: always
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    container_name: next-database
+volumes:
+  postgresql_data:
